@@ -76,10 +76,14 @@
         let paymentsData = 'none';
         let playerData = 'noData';
 
+        function InitGame() {
+            console.warn("InitGame is not implemented. Varsayılan InitGame çağrıldı.");
+            // Varsayılan olarak oyun başlatma işlemlerini burada yapabilirsiniz.
+        }
+
         function GetPayments() { console.warn("GetPayments is not implemented"); return Promise.resolve("none"); }
         function SaveCloud() { console.warn("SaveCloud is not implemented"); }
         function LoadCloud() { console.warn("LoadCloud is not implemented"); return Promise.resolve("noData"); }
-        function InitPlayer() { console.warn("InitPlayer is not implemented"); return Promise.resolve("noData"); }
         function FullAdShow() { console.warn("FullAdShow is not implemented"); }
         function RewardedShow() { console.warn("RewardedShow is not implemented"); }
         function StickyAdActivity() { console.warn("StickyAdActivity is not implemented"); }
