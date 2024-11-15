@@ -53,8 +53,10 @@
         let ysdk = null;
         let initGame = false;
 
-        // Default SDK placeholders for safety
+        // Safe SDK call wrapper
         const safeSDKCall = (fn, fallback) => { try { return fn(); } catch { return fallback; } };
+
+        // Initialize Yandex SDK
         const InitYSDK = async () => {
             try {
                 ysdk = await YaGames.init();
@@ -64,6 +66,7 @@
             }
         };
 
+        // Unity instance loader
         const StartUnityInstance = () => {
             createUnityInstance(canvas, config, (progress) => {
                 spinner.style.display = "none";
@@ -87,6 +90,7 @@
         window.addEventListener('pointerdown', FocusGame);
         window.addEventListener('touchstart', FocusGame);
 
+        // Error handling
         window.addEventListener("unhandledrejection", (event) => {
             console.warn("Unhandled promise rejection ignored:", event.reason);
             event.preventDefault();
@@ -97,22 +101,70 @@
             event.preventDefault();
         });
 
-        InitYSDK();
-
-        // Placeholder for game-related callbacks and functions
+        // Game-related placeholders
         function InitGame() {
             console.log("Game initialized.");
             initGame = true;
         }
+
         function ResumeGame() {
             safeSDKCall(() => myGameInstance.Module.resumeMainLoop(), null);
         }
+
         function FullAdShow() {
             safeSDKCall(() => ysdk?.adv?.showFullscreenAdv(), null);
         }
+
         function RewardedShow() {
             safeSDKCall(() => ysdk?.adv?.showRewardedVideo(), null);
         }
+
+        function StickyAdActivity() {
+            safeSDKCall(() => ysdk?.adv?.showBannerAdv(), null);
+        }
+
+        function Review() {
+            safeSDKCall(() => ysdk?.feedback?.requestReview(), null);
+        }
+
+        function PromptShow() {
+            safeSDKCall(() => ysdk?.shortcut?.showPrompt(), null);
+        }
+
+        function GetPayments() {
+            return safeSDKCall(() => ysdk?.payments?.getPurchases(), []);
+        }
+
+        function SaveCloud(data) {
+            console.warn("Cloud save not implemented, data:", data);
+        }
+
+        function LoadCloud() {
+            return Promise.resolve("noData");
+        }
+
+        function InitLeaderboards() {
+            console.warn("Leaderboards not implemented.");
+        }
+
+        function GetLeaderboardScores() {
+            console.warn("GetLeaderboardScores not implemented.");
+        }
+
+        function SetLeaderboardScores() {
+            console.warn("SetLeaderboardScores not implemented.");
+        }
+
+        function ConsumePurchase() {
+            console.warn("ConsumePurchase not implemented.");
+        }
+
+        function ConsumePurchases() {
+            console.warn("ConsumePurchases not implemented.");
+        }
+
+        // Initialize Yandex SDK
+        InitYSDK();
     </script>
 </body>
 </html>
