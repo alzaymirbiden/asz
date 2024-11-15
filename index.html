@@ -76,7 +76,11 @@
         let paymentsData = 'none';
         let playerData = 'noData';
 
-        // Yandex SDK'yı başlatırken kontrol mekanizması
+        // Eksik olan InitGame işlevi
+        function InitGame() {
+            console.log("InitGame çağrıldı ancak işlev içeriği tanımlı değil.");
+        }
+
         async function InitYSDK() {
             try {
                 console.log("Yandex SDK başlatılıyor...");
@@ -84,7 +88,6 @@
 
                 console.log("Yandex SDK başarıyla başlatıldı.");
 
-                // Eğer ysdk başarıyla başlatıldıysa özelliklere erişimi kontrol edin
                 if (ysdk && ysdk.deviceInfo) {
                     console.log("Cihaz bilgisi:", ysdk.deviceInfo.type);
                 } else {
@@ -92,29 +95,9 @@
                 }
             } catch (error) {
                 console.error("Yandex SDK başlatma hatası:", error);
-                ysdk = null; // Eğer hata varsa `ysdk` null olarak ayarlanır
+                ysdk = null;
             }
         }
-
-        function IsMobile() {
-            // `ysdk` kontrolü olmadan `deviceInfo`ya erişilmiyor
-            return ysdk && ysdk.deviceInfo ? ysdk.deviceInfo.isMobile : false;
-        }
-
-        // Varsayılan SDK işlevleri
-        function GetPayments() { console.warn("GetPayments is not implemented"); return Promise.resolve("none"); }
-        function SaveCloud() { console.warn("SaveCloud is not implemented"); }
-        function LoadCloud() { console.warn("LoadCloud is not implemented"); return Promise.resolve("noData"); }
-        function FullAdShow() { console.warn("FullAdShow is not implemented"); }
-        function RewardedShow() { console.warn("RewardedShow is not implemented"); }
-        function StickyAdActivity() { console.warn("StickyAdActivity is not implemented"); }
-        function Review() { console.warn("Review is not implemented"); }
-        function PromptShow() { console.warn("PromptShow is not implemented"); }
-        function InitLeaderboards() { console.warn("InitLeaderboards is not implemented"); }
-        function GetLeaderboardScores() { console.warn("GetLeaderboardScores is not implemented"); }
-        function SetLeaderboardScores() { console.warn("SetLeaderboardScores is not implemented"); }
-        function ConsumePurchase() { console.warn("ConsumePurchase is not implemented"); }
-        function ConsumePurchases() { console.warn("ConsumePurchases is not implemented"); }
 
         const script = document.createElement("script");
         script.src = loaderUrl;
