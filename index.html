@@ -49,105 +49,70 @@
         const progressBarFull = document.querySelector("#unity-progress-bar-full");
         const spinner = document.querySelector('.spinner');
 
-        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-            container.className = "unity-mobile";
-        }
-
-        loadingCover.style.background = "url('background.jpg') center / cover";
-        loadingCover.style.display = "";
-
-        document.addEventListener('contextmenu', event => event.preventDefault());
-
-        function FocusGame() {
-            window.focus();
-            canvas.focus();
-        }
-
-        window.addEventListener('pointerdown', FocusGame);
-        window.addEventListener('touchstart', FocusGame);
-
-        let StartUnityInstance;
         let myGameInstance = null;
         let ysdk = null;
+        let initGame = false;
 
-        // Varsayılan değerler ve işlevler
-        let environmentData = { language: "en", domain: "default_domain" };
-        let cloudSaves = 'noData';
-        let paymentsData = 'none';
-        let playerData = 'noData';
-
-        // Eksik olan InitGame işlevi
-        function InitGame() {
-            console.log("InitGame çağrıldı ancak işlev içeriği tanımlı değil.");
-        }
-
-        // Yandex SDK'yı başlatırken kontrol mekanizması
-        async function InitYSDK() {
+        // Default SDK placeholders for safety
+        const safeSDKCall = (fn, fallback) => { try { return fn(); } catch { return fallback; } };
+        const InitYSDK = async () => {
             try {
-                console.log("Yandex SDK başlatılıyor...");
                 ysdk = await YaGames.init();
-
-                console.log("Yandex SDK başarıyla başlatıldı.");
-
-                // Eğer ysdk başarıyla başlatıldıysa özelliklere erişimi kontrol edin
-                if (ysdk && ysdk.deviceInfo) {
-                    console.log("Cihaz bilgisi:", ysdk.deviceInfo.type);
-                } else {
-                    console.warn("ysdk veya deviceInfo tanımlı değil.");
-                }
-            } catch (error) {
-                console.error("Yandex SDK başlatma hatası:", error);
-                ysdk = null; // Eğer hata varsa `ysdk` null olarak ayarlanır
+                console.log("Yandex SDK initialized successfully.");
+            } catch (e) {
+                console.warn("Failed to initialize Yandex SDK:", e);
             }
-        }
+        };
 
-        // Varsayılan SDK işlevleri
-        function GetPayments() { console.warn("GetPayments is not implemented"); return Promise.resolve("none"); }
-        function SaveCloud() { console.warn("SaveCloud is not implemented"); }
-        function LoadCloud() { console.warn("LoadCloud is not implemented"); return Promise.resolve("noData"); }
-        function FullAdShow() { console.warn("FullAdShow is not implemented"); }
-        function RewardedShow() { console.warn("RewardedShow is not implemented"); }
-        function StickyAdActivity() { console.warn("StickyAdActivity is not implemented"); }
-        function Review() { console.warn("Review is not implemented"); }
-        function PromptShow() { console.warn("PromptShow is not implemented"); }
-        function InitLeaderboards() { console.warn("InitLeaderboards is not implemented"); }
-        function GetLeaderboardScores() { console.warn("GetLeaderboardScores is not implemented"); }
-        function SetLeaderboardScores() { console.warn("SetLeaderboardScores is not implemented"); }
-        function ConsumePurchase() { console.warn("ConsumePurchase is not implemented"); }
-        function ConsumePurchases() { console.warn("ConsumePurchases is not implemented"); }
+        const StartUnityInstance = () => {
+            createUnityInstance(canvas, config, (progress) => {
+                spinner.style.display = "none";
+                progressBarEmpty.style.display = "";
+                progressBarFull.style.width = `${100 * progress}%`;
+            }).then((unityInstance) => {
+                myGameInstance = unityInstance;
+                loadingCover.style.display = "none";
+            }).catch((err) => {
+                console.error("Unity Instance Error:", err);
+            });
+        };
 
         const script = document.createElement("script");
         script.src = loaderUrl;
-        script.onload = () => {
-            StartUnityInstance = function () {
-                createUnityInstance(canvas, config, (progress) => {
-                    spinner.style.display = "none";
-                    progressBarEmpty.style.display = "";
-                    progressBarFull.style.width = `${100 * progress}%`;
-                }).then((unityInstance) => {
-                    myGameInstance = unityInstance;
-                    loadingCover.style.display = "none";
-                }).catch((message) => {
-                    console.error("Unity yükleme hatası:", message);
-                });
-            };
-            StartUnityInstance();
-        };
+        script.onload = StartUnityInstance;
         document.body.appendChild(script);
 
-        // Hata oluştuğunda tüm hataları yakalayıp es geçerek oyuna devam et
-        window.addEventListener("unhandledrejection", function(event) {
-            console.warn("Promise hatası es geçildi:", event.reason);
+        // Event handlers
+        const FocusGame = () => { window.focus(); canvas.focus(); };
+        window.addEventListener('pointerdown', FocusGame);
+        window.addEventListener('touchstart', FocusGame);
+
+        window.addEventListener("unhandledrejection", (event) => {
+            console.warn("Unhandled promise rejection ignored:", event.reason);
             event.preventDefault();
         });
 
-        window.addEventListener("error", function(event) {
-            console.error("Genel hata es geçildi:", event.message);
+        window.addEventListener("error", (event) => {
+            console.error("Error ignored:", event.message);
             event.preventDefault();
         });
 
-        // Yandex SDK'yı başlat
         InitYSDK();
+
+        // Placeholder for game-related callbacks and functions
+        function InitGame() {
+            console.log("Game initialized.");
+            initGame = true;
+        }
+        function ResumeGame() {
+            safeSDKCall(() => myGameInstance.Module.resumeMainLoop(), null);
+        }
+        function FullAdShow() {
+            safeSDKCall(() => ysdk?.adv?.showFullscreenAdv(), null);
+        }
+        function RewardedShow() {
+            safeSDKCall(() => ysdk?.adv?.showRewardedVideo(), null);
+        }
     </script>
 </body>
 </html>
