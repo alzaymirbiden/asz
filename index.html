@@ -56,7 +56,7 @@
     let payments = null;
     let initGame = false;
     let nowFullAdOpen = false;
-    let ysdk = null; // Yandex SDK initialization
+    let ysdk = null;
     let environmentData = {
         language: "en",
         domain: "default_domain",
@@ -104,6 +104,21 @@
         return environmentData;
     }
 
+    // Yeni: InitGame fonksiyonu
+    function InitGame() {
+        try {
+            console.log("Game initialization successful.");
+            initGame = true;
+
+            // Reklamlar veya diğer başlangıç modüllerini çağırma
+            if (nowFullAdOpen === true && myGameInstance !== null) {
+                myGameInstance.SendMessage('YandexGame', 'OpenFullAd');
+            }
+        } catch (error) {
+            console.error("InitGame sırasında hata:", error);
+        }
+    }
+
     // Check if the user is on mobile
     if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         container.className = "unity-mobile";
@@ -131,7 +146,6 @@
             console.log("Initializing Yandex SDK...");
             ysdk = await YaGames.init();
             console.log("Yandex SDK initialized successfully.");
-            // Additional SDK-dependent initialization here if needed
         } catch (error) {
             console.warn("Yandex SDK initialization failed:", error);
             ysdk = null; // SDK yoksa null kalır
@@ -152,6 +166,7 @@
                     myGameInstance = unityInstance;
                     loadingCover.style.display = "none";
                     InitEnvironmentData(); // Environment data başlatılıyor
+                    InitGame(); // InitGame fonksiyonu çağrılıyor
                 }).catch((message) => {
                     console.error("Unity yükleme hatası:", message);
                 });
