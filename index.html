@@ -76,11 +76,32 @@
         let paymentsData = 'none';
         let playerData = 'noData';
 
-        function InitGame() {
-            console.warn("InitGame is not implemented. Varsayılan InitGame çağrıldı.");
-            // Varsayılan olarak oyun başlatma işlemlerini burada yapabilirsiniz.
+        // Yandex SDK'yı başlatırken kontrol mekanizması
+        async function InitYSDK() {
+            try {
+                console.log("Yandex SDK başlatılıyor...");
+                ysdk = await YaGames.init();
+
+                console.log("Yandex SDK başarıyla başlatıldı.");
+
+                // Eğer ysdk başarıyla başlatıldıysa özelliklere erişimi kontrol edin
+                if (ysdk && ysdk.deviceInfo) {
+                    console.log("Cihaz bilgisi:", ysdk.deviceInfo.type);
+                } else {
+                    console.warn("ysdk veya deviceInfo tanımlı değil.");
+                }
+            } catch (error) {
+                console.error("Yandex SDK başlatma hatası:", error);
+                ysdk = null; // Eğer hata varsa `ysdk` null olarak ayarlanır
+            }
         }
 
+        function IsMobile() {
+            // `ysdk` kontrolü olmadan `deviceInfo`ya erişilmiyor
+            return ysdk && ysdk.deviceInfo ? ysdk.deviceInfo.isMobile : false;
+        }
+
+        // Varsayılan SDK işlevleri
         function GetPayments() { console.warn("GetPayments is not implemented"); return Promise.resolve("none"); }
         function SaveCloud() { console.warn("SaveCloud is not implemented"); }
         function LoadCloud() { console.warn("LoadCloud is not implemented"); return Promise.resolve("noData"); }
@@ -124,6 +145,9 @@
             console.error("Genel hata es geçildi:", event.message);
             event.preventDefault();
         });
+
+        // Yandex SDK'yı başlat
+        InitYSDK();
     </script>
 </body>
 </html>
