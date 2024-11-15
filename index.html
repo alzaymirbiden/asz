@@ -103,8 +103,12 @@
         console.log("Environment data initialized:", JSON.stringify(environmentData));
         return environmentData;
     }
+
     function IsMobile() {
-        // Varsayılan olarak false döndürülüyor, mobil cihazlarda true olacak şekilde geliştirme yapılabilir.
+        if (ysdk && ysdk.deviceInfo) {
+            return ysdk.deviceInfo.isMobile();
+        }
+        console.warn("Yandex SDK is not initialized or deviceInfo is unavailable.");
         return environmentData.isMobile || false;
     }
 
