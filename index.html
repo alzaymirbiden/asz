@@ -54,7 +54,12 @@
         let myGameInstance = null;
         let ysdk = null;
         let initGame = false;
-        let nowFullAdOpen = false;
+
+        // Placeholder variables
+        let cloudSaves = "noData";
+        let environmentData = { language: "en", domain: "default" };
+        let playerData = "noData";
+        let paymentsData = "none";
 
         function FocusGame() {
             window.focus();
@@ -64,13 +69,13 @@
         window.addEventListener('pointerdown', FocusGame);
         window.addEventListener('touchstart', FocusGame);
 
-        // Yandex SDK ile ilgili fonksiyonlar
+        // Yandex SDK placeholder functions
         async function InitYSDK() {
             try {
                 ysdk = await YaGames.init();
-                console.log("Yandex SDK başarıyla başlatıldı.");
+                console.log("Yandex SDK initialized successfully.");
             } catch (e) {
-                console.warn("Yandex SDK başlatılamadı:", e);
+                console.warn("Yandex SDK initialization failed:", e);
             }
         }
 
@@ -80,17 +85,26 @@
         function Review() { console.warn("Yandex Review is disabled."); }
         function PromptShow() { console.warn("Yandex PromptShow is disabled."); }
         function InitLeaderboards() { console.warn("Yandex InitLeaderboards is disabled."); }
-        function GetLeaderboardScores() { console.warn("Yandex GetLeaderboardScores is disabled."); }
+        function GetLeaderboardScores() { return Promise.resolve("noData"); }
         function SetLeaderboardScores() { console.warn("Yandex SetLeaderboardScores is disabled."); }
         function SaveCloud() { console.warn("Yandex SaveCloud is disabled."); }
-        function LoadCloud() { console.warn("Yandex LoadCloud is disabled."); }
-        function GetPayments() { console.warn("Yandex GetPayments is disabled."); }
+        function LoadCloud(sendback) { 
+            console.warn("Yandex LoadCloud is disabled.");
+            return Promise.resolve(cloudSaves);
+        }
+        function GetPayments() { return Promise.resolve(paymentsData); }
         function ConsumePurchase() { console.warn("Yandex ConsumePurchase is disabled."); }
         function ConsumePurchases() { console.warn("Yandex ConsumePurchases is disabled."); }
-        function RequestingEnvironmentData() { console.warn("Yandex RequestingEnvironmentData is disabled."); }
-        function InitPlayer() { console.warn("Yandex InitPlayer is disabled."); }
+        function RequestingEnvironmentData() { 
+            console.warn("Yandex RequestingEnvironmentData is disabled.");
+            return Promise.resolve(environmentData);
+        }
+        function InitPlayer(sendback) {
+            console.warn("Yandex InitPlayer is disabled.");
+            return Promise.resolve(playerData);
+        }
 
-        // Unity Instance başlatma
+        // Unity instance setup
         const script = document.createElement("script");
         script.src = loaderUrl;
         script.onload = () => {
@@ -107,7 +121,7 @@
         };
         document.body.appendChild(script);
 
-        // Genel hata yakalama
+        // Global error handling
         window.addEventListener("unhandledrejection", (event) => {
             console.warn("Unhandled promise rejection:", event.reason);
             event.preventDefault();
@@ -118,7 +132,7 @@
             event.preventDefault();
         });
 
-        // Yandex SDK'yı başlat
+        // Initialize Yandex SDK
         InitYSDK();
     </script>
 </body>
