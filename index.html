@@ -29,29 +29,34 @@
             <div class="spinner"></div>
         </div>
     </div>
-    <script>
-        const buildUrl = "Build";
-        const loaderUrl = buildUrl + "/Noob_Skates_Through_the_Pipe.loader.js";
-        const config = {
-            dataUrl: buildUrl + "/Noob_Skates_Through_the_Pipe.data.unityweb",
-            frameworkUrl: buildUrl + "/Noob_Skates_Through_the_Pipe.framework.js.unityweb",
-            codeUrl: buildUrl + "/Noob_Skates_Through_the_Pipe.wasm.unityweb",
-            streamingAssetsUrl: "StreamingAssets",
-            companyName: "hordorDevs",
-            productName: "Noob_Skates_Through_the_Pipe",
-            productVersion: "0.1"
-        };
+<script>
+    const buildUrl = "Build";
+    const loaderUrl = buildUrl + "/Noob_Skates_Through_the_Pipe.loader.js";
+    const config = {
+        dataUrl: buildUrl + "/Noob_Skates_Through_the_Pipe.data.unityweb",
+        frameworkUrl: buildUrl + "/Noob_Skates_Through_the_Pipe.framework.js.unityweb",
+        codeUrl: buildUrl + "/Noob_Skates_Through_the_Pipe.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "hordorDevs",
+        productName: "Noob_Skates_Through_the_Pipe",
+        productVersion: "0.1"
+    };
 
-        const container = document.querySelector("#unity-container");
-        const canvas = document.querySelector("#unity-canvas");
-        const loadingCover = document.querySelector("#loading-cover");
-        const progressBarEmpty = document.querySelector("#unity-progress-bar-empty");
-        const progressBarFull = document.querySelector("#unity-progress-bar-full");
-        const spinner = document.querySelector('.spinner');
+    const container = document.querySelector("#unity-container");
+    const canvas = document.querySelector("#unity-canvas");
+    const loadingCover = document.querySelector("#loading-cover");
+    const progressBarEmpty = document.querySelector("#unity-progress-bar-empty");
+    const progressBarFull = document.querySelector("#unity-progress-bar-full");
+    const spinner = document.querySelector('.spinner');
 
-let cloudSaves = 'noData';
+    let cloudSaves = 'noData';
     let paymentsData = 'none';
     let playerData = 'noData';
+    let player = null;
+    let payments = null;
+    let initGame = false;
+    let nowFullAdOpen = false;
+    let ysdk = null; // Yandex SDK initialization
     let environmentData = {
         language: "en",
         domain: "default_domain",
@@ -94,11 +99,43 @@ let cloudSaves = 'noData';
     function SetLeaderboardScores() { console.warn("SetLeaderboardScores is not implemented"); }
     function ConsumePurchase() { console.warn("ConsumePurchase is not implemented"); }
     function ConsumePurchases() { console.warn("ConsumePurchases is not implemented"); }
-
-    // Environment data initialization function
     function InitEnvironmentData() {
         console.log("Environment data initialized:", JSON.stringify(environmentData));
         return environmentData;
+    }
+
+    // Check if the user is on mobile
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        container.className = "unity-mobile";
+    }
+
+    loadingCover.style.background = "url('background.jpg') center / cover";
+    loadingCover.style.display = "";
+
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
+    function FocusGame() {
+        window.focus();
+        canvas.focus();
+    }
+
+    window.addEventListener('pointerdown', FocusGame);
+    window.addEventListener('touchstart', FocusGame);
+
+    let StartUnityInstance;
+    let myGameInstance;
+
+    // Yandex SDK Initialization
+    async function InitYandexSDK() {
+        try {
+            console.log("Initializing Yandex SDK...");
+            ysdk = await YaGames.init();
+            console.log("Yandex SDK initialized successfully.");
+            // Additional SDK-dependent initialization here if needed
+        } catch (error) {
+            console.warn("Yandex SDK initialization failed:", error);
+            ysdk = null; // SDK yoksa null kalır
+        }
     }
 
     // Unity instance başlatma işlemi
@@ -122,6 +159,7 @@ let cloudSaves = 'noData';
             StartUnityInstance();
         };
         document.body.appendChild(script);
+        InitYandexSDK(); // Yandex SDK başlatma çağrısı
     } catch (error) {
         console.error("Başlatma sırasında hata:", error);
     }
@@ -130,6 +168,7 @@ let cloudSaves = 'noData';
         console.warn("Hata es geçildi:", event.reason);
         event.preventDefault();
     });
-    </script>
+</script>
+
 </body>
 </html>
