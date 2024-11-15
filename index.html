@@ -56,7 +56,7 @@
     let payments = null;
     let initGame = false;
     let nowFullAdOpen = false;
-    let ysdk = null;
+    let ysdk = null; // Yandex SDK başlangıçta null
     let environmentData = {
         language: "en",
         domain: "default_domain",
@@ -84,7 +84,16 @@
         })()
     };
 
-    // Eksik olabilecek tüm SDK işlevlerini varsayılan olarak tanımla
+    // Yandex SDK'ya erişim olmadan önce varsayılan değerlerle `deviceInfo` sağlama
+    function IsMobile() {
+        if (ysdk && ysdk.deviceInfo) {
+            return ysdk.deviceInfo.isMobile();
+        }
+        console.warn("Yandex SDK or deviceInfo is not available. Returning default value.");
+        return environmentData.isMobile || false; // Varsayılan değer
+    }
+
+    // Varsayılan işlevler
     function GetPayments() { console.warn("GetPayments is not implemented"); return Promise.resolve("none"); }
     function SaveCloud() { console.warn("SaveCloud is not implemented"); }
     function LoadCloud() { console.warn("LoadCloud is not implemented"); return Promise.resolve("noData"); }
@@ -104,47 +113,12 @@
         return environmentData;
     }
 
-    function IsMobile() {
-        if (ysdk && ysdk.deviceInfo) {
-            return ysdk.deviceInfo.isMobile();
-        }
-        console.warn("Yandex SDK is not initialized or deviceInfo is unavailable.");
-        return environmentData.isMobile || false;
-    }
-
-    // Yeni: InitGame fonksiyonu
     function InitGame() {
-        try {
-            console.log("Game initialization successful.");
-            initGame = true;
-
-            // Reklamlar veya diğer başlangıç modüllerini çağırma
-            if (nowFullAdOpen === true && myGameInstance !== null) {
-                myGameInstance.SendMessage('YandexGame', 'OpenFullAd');
-            }
-        } catch (error) {
-            console.error("InitGame sırasında hata:", error);
-        }
+        console.log("Game initialized successfully.");
+        initGame = true;
     }
 
-    // Check if the user is on mobile
-    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        container.className = "unity-mobile";
-    }
-
-    loadingCover.style.background = "url('background.jpg') center / cover";
-    loadingCover.style.display = "";
-
-    document.addEventListener('contextmenu', event => event.preventDefault());
-
-    function FocusGame() {
-        window.focus();
-        canvas.focus();
-    }
-
-    window.addEventListener('pointerdown', FocusGame);
-    window.addEventListener('touchstart', FocusGame);
-
+    // Unity başlatma
     let StartUnityInstance;
     let myGameInstance;
 
@@ -156,11 +130,10 @@
             console.log("Yandex SDK initialized successfully.");
         } catch (error) {
             console.warn("Yandex SDK initialization failed:", error);
-            ysdk = null; // SDK yoksa null kalır
+            ysdk = null; // SDK yüklenemezse null olarak kalır
         }
     }
 
-    // Unity instance başlatma işlemi
     try {
         const script = document.createElement("script");
         script.src = loaderUrl;
@@ -173,8 +146,8 @@
                 }).then((unityInstance) => {
                     myGameInstance = unityInstance;
                     loadingCover.style.display = "none";
-                    InitEnvironmentData(); // Environment data başlatılıyor
-                    InitGame(); // InitGame fonksiyonu çağrılıyor
+                    InitEnvironmentData();
+                    InitGame();
                 }).catch((message) => {
                     console.error("Unity yükleme hatası:", message);
                 });
@@ -182,13 +155,13 @@
             StartUnityInstance();
         };
         document.body.appendChild(script);
-        InitYandexSDK(); // Yandex SDK başlatma çağrısı
+        InitYandexSDK(); // Yandex SDK başlatma
     } catch (error) {
         console.error("Başlatma sırasında hata:", error);
     }
 
     window.addEventListener("unhandledrejection", function(event) {
-        console.warn("Hata es geçildi:", event.reason);
+        console.warn("Unhandled rejection:", event.reason);
         event.preventDefault();
     });
 </script>
