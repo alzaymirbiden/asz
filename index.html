@@ -61,15 +61,7 @@
         let playerData = "noData";
         let paymentsData = "none";
 
-        function FocusGame() {
-            window.focus();
-            canvas.focus();
-        }
-
-        window.addEventListener('pointerdown', FocusGame);
-        window.addEventListener('touchstart', FocusGame);
-
-        // Yandex SDK placeholder functions
+        // Placeholder functions for Yandex SDK
         async function InitYSDK() {
             try {
                 ysdk = await YaGames.init();
@@ -104,6 +96,19 @@
             return Promise.resolve(playerData);
         }
 
+        // Definition of InitGame function
+        window.InitGame = function() {
+            console.log("InitGame called: Game initialized successfully.");
+            initGame = true;
+
+            // Placeholder logic for Unity interaction
+            if (myGameInstance) {
+                console.log("Game instance is ready.");
+                // Notify Unity about game initialization success
+                myGameInstance.SendMessage("GameManager", "OnInitComplete", "true");
+            }
+        };
+
         // Unity instance setup
         const script = document.createElement("script");
         script.src = loaderUrl;
@@ -115,6 +120,7 @@
             }).then((unityInstance) => {
                 myGameInstance = unityInstance;
                 loadingCover.style.display = "none";
+                console.log("Unity instance successfully created.");
             }).catch((err) => {
                 console.error("Unity Instance Error:", err);
             });
