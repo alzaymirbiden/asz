@@ -53,20 +53,47 @@
         let ysdk = null;
         let initGame = false;
 
-        // Safe SDK call wrapper
-        const safeSDKCall = (fn, fallback) => { try { return fn(); } catch { return fallback; } };
+        // Varsayılan environmentData
+        let environmentData = {
+            language: "en",
+            domain: "default_domain",
+            deviceType: "desktop",
+            isMobile: false,
+            isTablet: false,
+            isDesktop: true,
+            appID: "default_app",
+            browserLang: "en",
+            promptCanShow: false,
+            reviewCanShow: false
+        };
 
-        // Initialize Yandex SDK
+        // Yandex SDK başlangıcı
         const InitYSDK = async () => {
             try {
                 ysdk = await YaGames.init();
-                console.log("Yandex SDK initialized successfully.");
+                console.log("Yandex SDK başarıyla başlatıldı.");
+
+                // Eğer ysdk mevcutsa environmentData güncellenir
+                if (ysdk && ysdk.environment) {
+                    environmentData = {
+                        language: ysdk.environment.i18n.lang,
+                        domain: ysdk.environment.i18n.tld,
+                        deviceType: ysdk.deviceInfo.type,
+                        isMobile: ysdk.deviceInfo.isMobile(),
+                        isTablet: ysdk.deviceInfo.isTablet(),
+                        isDesktop: ysdk.deviceInfo.isDesktop(),
+                        appID: ysdk.environment.app.id,
+                        browserLang: ysdk.environment.browser.lang,
+                        promptCanShow: safeSDKCall(() => ysdk.shortcut.canShowPrompt().canShow, false),
+                        reviewCanShow: safeSDKCall(() => ysdk.feedback.canReview().value, false)
+                    };
+                }
             } catch (e) {
-                console.warn("Failed to initialize Yandex SDK:", e);
+                console.warn("Yandex SDK başlatma hatası:", e);
             }
         };
 
-        // Unity instance loader
+        // Unity yükleyici
         const StartUnityInstance = () => {
             createUnityInstance(canvas, config, (progress) => {
                 spinner.style.display = "none";
@@ -90,24 +117,24 @@
         window.addEventListener('pointerdown', FocusGame);
         window.addEventListener('touchstart', FocusGame);
 
-        // Error handling
+        // Hata yönetimi
         window.addEventListener("unhandledrejection", (event) => {
             console.warn("Unhandled promise rejection ignored:", event.reason);
             event.preventDefault();
         });
 
         window.addEventListener("error", (event) => {
-            console.error("Error ignored:", event.message);
+            console.error("Genel hata es geçildi:", event.message);
             event.preventDefault();
         });
 
-        // Game-related placeholders
+        // Oyun işlevleri
         function InitGame() {
-            console.log("Game initialized.");
+            console.log("Oyun başarıyla başlatıldı.");
             initGame = true;
         }
 
-        function ResumeGame() {
+              function ResumeGame() {
             safeSDKCall(() => myGameInstance.Module.resumeMainLoop(), null);
         }
 
@@ -163,7 +190,6 @@
             console.warn("ConsumePurchases not implemented.");
         }
 
-        // Initialize Yandex SDK
         InitYSDK();
     </script>
 </body>
