@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+<ModulePrefs title="Google.com" />
+<Content type="html"><![CDATA[
+
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/alzaymirbiden/asz@main/style.css"/>
+    <script src="https://cdn.jsdelivr.net/gh/alzaymirbiden/asz@main/v2.c9615ef7d76dacd2dd71.js"></script>
+    <style>
+        canvas:focus { outline: none; }
+        html, body {
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            user-select: none;
+            height: 100%;
+        }
+        #loading-cover {
+            background: url('https://cdn.jsdelivr.net/gh/alzaymirbiden/asz@main/background.jpg') center / cover no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            position: absolute;
+            width: 100%;
+        }
+        #unity-progress-bar-empty {
+            width: 80%;
+            height: 20px;
+            background: #ddd;
+            margin-top: 20px;
+        }
+        #unity-progress-bar-full {
+            background-color: #4CAF50;
+            height: 100%;
+            transition: width 0.2s;
+        }
+        #unity-logo {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body class="dark">
+    <div id="unity-container" class="unity-desktop">
+        <canvas id="unity-canvas" tabindex="-1"></canvas>
+    </div>
+    <div id="loading-cover">
+        <div id="unity-loading-bar">
+            <div id="unity-logo"><img src="https://cdn.jsdelivr.net/gh/alzaymirbiden/asz@main/logo.png" alt="Game Logo"/></div>
+            <div id="unity-progress-bar-empty">
+                <div id="unity-progress-bar-full"></div>
+            </div>
+            <div class="spinner"></div>
+        </div>
+    </div>
+    <script>
+        const buildUrl = "https://cdn.jsdelivr.net/gh/alzaymirbiden/asz@main/Build";
+        const loaderUrl = buildUrl + "/Noob_Skates_Through_the_Pipe.loader.js";
+        const config = {
+            dataUrl: buildUrl + "/Noob_Skates_Through_the_Pipe.data.unityweb",
+            frameworkUrl: buildUrl + "/Noob_Skates_Through_the_Pipe.framework.js.unityweb",
+            codeUrl: buildUrl + "/Noob_Skates_Through_the_Pipe.wasm.unityweb",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "hordorDevs",
+            productName: "Noob_Skates_Through_the_Pipe",
+            productVersion: "0.1"
+        };
+
+        const container = document.querySelector("#unity-container");
+        const canvas = document.querySelector("#unity-canvas");
+        const loadingCover = document.querySelector("#loading-cover");
+        const progressBarFull = document.querySelector("#unity-progress-bar-full");
+
+        let myGameInstance = null;
+        let ysdk = null;
+
+        // Define a safe fallback for deviceInfo
+        const safeDeviceInfo = {
+            isMobile: false,
+            isTablet: false,
+            isDesktop: true
+        };
+
+        // Mock deviceInfo to prevent null errors
+        const environmentData = {
+            language: "en",
+            domain: "default",
+            deviceInfo: safeDeviceInfo
+        };
+
+        // Function to safely access device info
+        function getDeviceInfo() {
+            try {
+                return ysdk && ysdk.environment && ysdk.environment.deviceInfo ? ysdk.environment.deviceInfo : safeDeviceInfo;
+            } catch (e) {
+                console.warn("Error accessing deviceInfo. Defaulting to desktop.", e);
+                return safeDeviceInfo;
+            }
+        }
+
+        // Mock Yandex SDK functions
+        function RewardedShow(id) {
+            console.warn("Rewarded ads are mocked and passive.");
+            setTimeout(() => {
+                if (myGameInstance) {
+                    console.log("Simulated rewarded ad completed.");
+                    try {
+                        myGameInstance.SendMessage("GameManager", "OnRewardedAdComplete", id || "mocked_id");
+                    } catch (error) {
+                        console.warn("GameManager object not found in Unity. Skipping RewardedAd callback.");
+                    }
+                }
+            }, 1000); // Simulate a short delay
+        }
+
+        async function InitYSDK() {
+            try {
+                ysdk = await YaGames.init();
+                console.log("Yandex SDK initialized.");
+                const deviceInfo = getDeviceInfo();
+                console.log("Device Info:", deviceInfo);
+            } catch (e) {
+                console.warn("Yandex SDK initialization failed. Using safe defaults.", e);
+            }
+        }
+
+        const script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+            createUnityInstance(canvas, config, (progress) => {
+                progressBarFull.style.width = `${100 * progress}%`;
+            }).then((unityInstance) => {
+                myGameInstance = unityInstance;
+                loadingCover.style.display = "none";
+                console.log("Unity instance successfully created.");
+            }).catch((err) => {
+                console.error("Unity Instance Error:", err);
+            });
+        };
+        document.body.appendChild(script);
+
+        window.addEventListener("error", (event) => {
+            console.warn("Global error caught:", event.message);
+        });
+
+        InitYSDK();
+    </script>
+</body>
+</html>
+
+]]></Content>
+</Module>
