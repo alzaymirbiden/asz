@@ -17,6 +17,7 @@
         #loading-cover {
             background: url('background.jpg') center / cover no-repeat;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100%;
@@ -28,14 +29,36 @@
             height: 20px;
             background: #ddd;
             margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
         #unity-progress-bar-full {
-            background-color: #4CAF50;
             height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4CAF50, #00FF7F, #4CAF50);
+            background-size: 200% 100%;
+            animation: colorCycle 3s infinite linear;
             transition: width 0.2s;
+        }
+        @keyframes colorCycle {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
         }
         #unity-logo {
             margin-bottom: 10px;
+        }
+        #funny-text {
+            margin-top: 10px;
+            font-family: "Comic Sans MS", cursive, sans-serif;
+            font-size: 18px;
+            color: #4CAF50;
+            text-shadow: 2px 2px #000;
+            animation: bounce 1.5s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
     </style>
 </head>
@@ -49,7 +72,7 @@
             <div id="unity-progress-bar-empty">
                 <div id="unity-progress-bar-full"></div>
             </div>
-            <div class="spinner"></div>
+            <div id="funny-text">Loading... Grab some popcorn! 🍿</div>
         </div>
     </div>
     <script>
@@ -73,6 +96,7 @@
         let myGameInstance = null;
 
         // Placeholder environment data
+        const cloudSaves = "noData";
         const environmentData = {
             language: "en",
             domain: "default",
@@ -86,10 +110,27 @@
 
         // Mock SDK methods
         function FullAdShow() { console.warn("FullAdShow is not implemented."); }
-        function RewardedShow() { console.warn("RewardedShow is not implemented."); }
-        function SaveCloud() { console.warn("SaveCloud is not implemented."); }
-        function LoadCloud() { console.warn("LoadCloud is not implemented."); }
-        function GetPayments() { console.warn("GetPayments is not implemented."); }
+        function RewardedShow() { 
+            console.warn("RewardedShow is not implemented."); 
+            setTimeout(() => {
+                if (myGameInstance) {
+                    myGameInstance.SendMessage("GameManager", "OnRewardedAdComplete", "mocked_id");
+                }
+            }, 3000); // Simulating a 3-second ad
+        }
+        function SaveCloud(data, flush) { console.warn("SaveCloud is not implemented."); }
+        function LoadCloud(sendback) {
+            console.warn("LoadCloud is not implemented.");
+            if (sendback && myGameInstance) {
+                myGameInstance.SendMessage("GameManager", "SetLoadSaves", cloudSaves);
+            }
+            return Promise.resolve(cloudSaves);
+        }
+        function GetPayments() { return Promise.resolve("noData"); }
+        function RequestingEnvironmentData() {
+            console.warn("RequestingEnvironmentData is not implemented.");
+            return Promise.resolve(environmentData);
+        }
 
         // Unity instance setup
         const script = document.createElement("script");
