@@ -24,14 +24,11 @@
             height: 100%;
             position: absolute;
             width: 100%;
-            z-index: 9999;
         }
         #unity-progress-bar-empty {
             width: 80%;
             height: 20px;
             background: #ddd;
-            border-radius: 10px;
-            overflow: hidden;
             margin-top: 20px;
         }
         #unity-progress-bar-full {
@@ -79,6 +76,12 @@
         let ysdk = null;
         let initGame = false;
 
+        // Mocking Yandex SDK's postToParent function to suppress "No parent to post message" errors
+        window.W = window.W || {};
+        W.postToParent = function() {
+            console.warn("Blocked a call to postToParent.");
+        };
+
         // Placeholder variables
         let cloudSaves = "noData";
         let environmentData = { language: "en", domain: "default" };
@@ -101,7 +104,6 @@
             }
         }
 
-        // Mock Yandex SDK functions
         function FullAdShow() { console.warn("Yandex FullAdShow is disabled."); }
         function RewardedShow(id) { console.warn("Yandex RewardedShow is disabled."); }
         function StickyAdActivity(show) { console.warn("Yandex StickyAdActivity is disabled."); }
@@ -154,16 +156,10 @@
         };
         document.body.appendChild(script);
 
-        // Mock W.postToParent to avoid errors
-        window.W = window.W || {};
-        W.postToParent = function() {
-            console.warn("Blocked a call to postToParent.");
-        };
-
         // Global error handling
         window.addEventListener("unhandledrejection", (event) => {
-            if (event.reason && event.reason.message && event.reason.message.includes("No parent to post message")) {
-                console.warn("Ignoring unhandled rejection:", event.reason.message);
+            if (event.reason && event.reason.message.includes("No parent to post message")) {
+                console.warn("Ignoring unhandled rejection:", event.reason);
                 event.preventDefault();
             }
         });
