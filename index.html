@@ -17,7 +17,7 @@
             height: 100%;
         }
         #loading-cover {
-            background: url('background.jpg') center / cover;
+            background: url('background.jpg') center / cover no-repeat;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -25,10 +25,19 @@
             position: absolute;
             width: 100%;
         }
+        #unity-progress-bar-empty {
+            width: 80%;
+            height: 20px;
+            background: #ddd;
+            margin-top: 20px;
+        }
         #unity-progress-bar-full {
             background-color: #4CAF50;
             height: 100%;
             transition: width 0.2s;
+        }
+        #unity-logo {
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -39,7 +48,7 @@
     <div id="loading-cover">
         <div id="unity-loading-bar">
             <div id="unity-logo"><img src="logo.png" alt="Game Logo"/></div>
-            <div id="unity-progress-bar-empty" style="width: 80%; height: 20px; background: #ddd;">
+            <div id="unity-progress-bar-empty">
                 <div id="unity-progress-bar-full"></div>
             </div>
             <div class="spinner"></div>
@@ -73,16 +82,16 @@
         let playerData = "noData";
         let paymentsData = "none";
 
-        // Placeholder functions for Yandex SDK
+        // Override Yandex SDK behavior
         async function InitYSDK() {
             try {
                 ysdk = await YaGames.init();
                 console.log("Yandex SDK initialized successfully.");
 
-                // Override language to English
+                // Set language to English
                 if (ysdk.environment.i18n.lang !== "en") {
                     ysdk.environment.i18n.lang = "en";
-                    console.log("Language set to English.");
+                    console.log("Language overridden to English.");
                 }
             } catch (e) {
                 console.warn("Yandex SDK initialization failed:", e);
@@ -119,10 +128,8 @@
             console.log("InitGame called: Game initialized successfully.");
             initGame = true;
 
-            // Placeholder logic for Unity interaction
             if (myGameInstance) {
                 console.log("Game instance is ready.");
-                // Notify Unity about game initialization success
                 myGameInstance.SendMessage("GameManager", "OnInitComplete", "true");
             }
         };
