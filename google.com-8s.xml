@@ -79,7 +79,7 @@
         let myGameInstance = null;
         let ysdk = null;
 
-        // Mock missing variables and functions
+        // Mock Yandex SDK functions to prevent breaking interactions
         window.W = window.W || {};
         W.postToParent = function() { console.warn("Blocked a call to postToParent."); };
 
@@ -88,30 +88,17 @@
         let playerData = "noData";
         let paymentsData = "none";
 
-        async function InitYSDK() {
-            try {
-                ysdk = await YaGames.init();
-                console.log("Yandex SDK initialized successfully.");
-                if (ysdk.environment.i18n.lang !== "en") {
-                    ysdk.environment.i18n.lang = "en";
-                    console.log("Language set to English.");
-                }
-            } catch (e) {
-                console.warn("Yandex SDK initialization failed:", e);
-            }
-        }
-
+        // Prevent RewardedShow from interfering with interactions
         function RewardedShow(id) {
-            console.warn("Mocking rewarded ad show.");
+            console.warn("Rewarded ads are mocked and passive.");
             setTimeout(() => {
                 if (myGameInstance) {
-                    console.log("Mocked rewarded ad completed.");
+                    console.log("Simulated rewarded ad completed.");
                     myGameInstance.SendMessage("GameManager", "OnRewardedAdComplete", id || "mocked_id");
                 }
-            }, 3000);
+            }, 1000); // Simulate a short delay
         }
 
-        // Other SDK placeholders
         function FullAdShow() { console.warn("FullAdShow is not implemented."); }
         function StickyAdActivity() { console.warn("StickyAdActivity is not implemented."); }
         function SaveCloud() { console.warn("SaveCloud is not implemented."); }
@@ -125,6 +112,19 @@
         }
         function InitPlayer(sendback) { return Promise.resolve(playerData); }
 
+        async function InitYSDK() {
+            try {
+                ysdk = await YaGames.init();
+                console.log("Yandex SDK initialized.");
+                if (ysdk.environment.i18n.lang !== "en") {
+                    ysdk.environment.i18n.lang = "en";
+                    console.log("Language set to English.");
+                }
+            } catch (e) {
+                console.warn("Yandex SDK initialization failed:", e);
+            }
+        }
+
         window.InitGame = function() {
             console.log("Game initialized.");
             if (myGameInstance) {
@@ -132,7 +132,6 @@
             }
         };
 
-        // Unity Instance Setup
         const script = document.createElement("script");
         script.src = loaderUrl;
         script.onload = () => {
@@ -141,7 +140,7 @@
             }).then((unityInstance) => {
                 myGameInstance = unityInstance;
                 loadingCover.style.display = "none";
-                console.log("Unity instance created.");
+                console.log("Unity instance successfully created.");
             }).catch((err) => {
                 console.error("Unity Instance Error:", err);
             });
