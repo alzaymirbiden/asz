@@ -95,8 +95,9 @@
 
         let myGameInstance = null;
 
-        // Placeholder environment data
+        // Placeholder variables to avoid errors
         const cloudSaves = "noData";
+        const playerData = "noData";
         const environmentData = {
             language: "en",
             domain: "default",
@@ -107,16 +108,18 @@
             isTV: false,
             browserLang: navigator.language || "en",
         };
+        const paymentsData = "none";
 
-        // Mock SDK methods
+        // Mock SDK functions
         function FullAdShow() { console.warn("FullAdShow is not implemented."); }
-        function RewardedShow() { 
-            console.warn("RewardedShow is not implemented."); 
+        function RewardedShow(id) { 
+            console.warn("Mocking RewardedShow.");
             setTimeout(() => {
                 if (myGameInstance) {
-                    myGameInstance.SendMessage("GameManager", "OnRewardedAdComplete", "mocked_id");
+                    console.log("Mocked rewarded ad completed.");
+                    myGameInstance.SendMessage("GameManager", "OnRewardedAdComplete", id);
                 }
-            }, 3000); // Simulating a 3-second ad
+            }, 3000);
         }
         function SaveCloud(data, flush) { console.warn("SaveCloud is not implemented."); }
         function LoadCloud(sendback) {
@@ -126,11 +129,21 @@
             }
             return Promise.resolve(cloudSaves);
         }
-        function GetPayments() { return Promise.resolve("noData"); }
-        function RequestingEnvironmentData() {
-            console.warn("RequestingEnvironmentData is not implemented.");
-            return Promise.resolve(environmentData);
+        function GetPayments() { return Promise.resolve(paymentsData); }
+        function ConsumePurchase() { console.warn("ConsumePurchase is not implemented."); }
+        function ConsumePurchases() { console.warn("ConsumePurchases is not implemented."); }
+        function RequestingEnvironmentData() { return Promise.resolve(environmentData); }
+        function InitPlayer(sendback) {
+            console.warn("InitPlayer is not implemented.");
+            if (sendback && myGameInstance) {
+                myGameInstance.SendMessage("GameManager", "SetInitializationSDK", playerData);
+            }
+            return Promise.resolve(playerData);
         }
+        function StickyAdActivity(show) { console.warn("StickyAdActivity is not implemented."); }
+        function InitLeaderboards() { console.warn("InitLeaderboards is not implemented."); }
+        function GetLeaderboardScores() { return Promise.resolve("noData"); }
+        function SetLeaderboardScores() { console.warn("SetLeaderboardScores is not implemented."); }
 
         // Unity instance setup
         const script = document.createElement("script");
