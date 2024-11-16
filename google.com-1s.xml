@@ -94,7 +94,11 @@
             setTimeout(() => {
                 if (myGameInstance) {
                     console.log("Simulated rewarded ad completed.");
-                    myGameInstance.SendMessage("GameManager", "OnRewardedAdComplete", id || "mocked_id");
+                    try {
+                        myGameInstance.SendMessage("GameManager", "OnRewardedAdComplete", id || "mocked_id");
+                    } catch (error) {
+                        console.warn("GameManager object not found in Unity. Skipping RewardedAd callback.");
+                    }
                 }
             }, 1000); // Simulate a short delay
         }
@@ -128,7 +132,11 @@
         window.InitGame = function() {
             console.log("Game initialized.");
             if (myGameInstance) {
-                myGameInstance.SendMessage("GameManager", "OnInitComplete", "true");
+                try {
+                    myGameInstance.SendMessage("GameManager", "OnInitComplete", "true");
+                } catch (error) {
+                    console.warn("GameManager object not found in Unity. Skipping InitComplete callback.");
+                }
             }
         };
 
