@@ -79,16 +79,22 @@
         let myGameInstance = null;
         let ysdk = null;
 
+        // Safe fallback for deviceInfo
+        const safeDeviceInfo = {
+            isMobile: false,
+            isTablet: false,
+            isDesktop: true
+        };
+
         // Mock Yandex SDK functions to prevent breaking interactions
         window.W = window.W || {};
         W.postToParent = function() { console.warn("Blocked a call to postToParent."); };
 
         let cloudSaves = "noData";
-        let environmentData = { language: "en", domain: "default" };
+        let environmentData = { language: "en", domain: "default", ...safeDeviceInfo };
         let playerData = "noData";
         let paymentsData = "none";
 
-        // Prevent RewardedShow from interfering with interactions
         function RewardedShow(id) {
             console.warn("Rewarded ads are mocked and passive.");
             setTimeout(() => {
@@ -124,8 +130,10 @@
                     ysdk.environment.i18n.lang = "en";
                     console.log("Language set to English.");
                 }
+                ysdk.environment.deviceInfo = ysdk.environment.deviceInfo || safeDeviceInfo;
             } catch (e) {
-                console.warn("Yandex SDK initialization failed:", e);
+                console.warn("Yandex SDK initialization failed. Using safe defaults.", e);
+                environmentData = { ...environmentData, ...safeDeviceInfo };
             }
         }
 
