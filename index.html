@@ -5,6 +5,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
     <link rel="stylesheet" href="./style.css"/>
+    <!-- Yandex Games SDK -->
+    <script src="v2.c9615ef7d76dacd2dd71.js"></script>
     <style>
         canvas:focus { outline: none; }
         html, body {
@@ -17,7 +19,6 @@
         #loading-cover {
             background: url('background.jpg') center / cover no-repeat;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100%;
@@ -29,21 +30,11 @@
             height: 20px;
             background: #ddd;
             margin-top: 20px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
         #unity-progress-bar-full {
+            background-color: #4CAF50;
             height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #4CAF50, #00FF7F, #4CAF50);
-            background-size: 200% 100%;
-            animation: colorCycle 3s infinite linear;
             transition: width 0.2s;
-        }
-        @keyframes colorCycle {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; }
         }
         #unity-logo {
             margin-bottom: 10px;
@@ -82,55 +73,82 @@
         const progressBarFull = document.querySelector("#unity-progress-bar-full");
 
         let myGameInstance = null;
+        let ysdk = null;
+        let initGame = false;
 
-        // Mock variables to avoid undefined errors
-        const ysdk = null; // Mock Yandex SDK, if needed
-        const cloudSaves = "noData";
-        const environmentData = {
-            language: "en",
-            domain: "default",
-            deviceType: "desktop",
-            isMobile: false,
-            isDesktop: true,
-            isTablet: false,
-            isTV: false,
-            browserLang: navigator.language || "en",
+        // Mock Yandex SDK's postToParent to suppress errors
+        window.W = window.W || {};
+        W.postToParent = function() {
+            console.warn("Blocked a call to postToParent.");
         };
-        const playerData = "noData";
-        const paymentsData = "none";
 
-        // Helper function for safe SDK calls
-        function safeCall(fn, fallback) {
+        // Placeholder variables
+        let cloudSaves = "noData";
+        let environmentData = { language: "en", domain: "default" };
+        let playerData = "noData";
+        let paymentsData = "none";
+
+        // Override Yandex SDK behavior
+        async function InitYSDK() {
             try {
-                return fn();
-            } catch (err) {
-                console.warn("SafeCall Error:", err);
-                return fallback;
+                ysdk = await YaGames.init();
+                console.log("Yandex SDK initialized successfully.");
+
+                // Set language to English
+                if (ysdk.environment.i18n.lang !== "en") {
+                    ysdk.environment.i18n.lang = "en";
+                    console.log("Language overridden to English.");
+                }
+            } catch (e) {
+                console.warn("Yandex SDK initialization failed:", e);
             }
         }
 
-        // Mock SDK methods
-        function FullAdShow() { console.warn("FullAdShow is not implemented."); }
+        function FullAdShow() { console.warn("Yandex FullAdShow is disabled."); }
         function RewardedShow(id) { 
-            console.warn("RewardedShow is not implemented."); 
+            console.warn("Mocking rewarded ad show.");
+            
+            // Notify Unity about a successful rewarded ad event
             setTimeout(() => {
                 if (myGameInstance) {
-                    myGameInstance.SendMessage("GameManager", "OnRewardedAdComplete", id || "mocked_id");
+                    console.log("Mocked rewarded ad completed.");
+                    myGameInstance.SendMessage("GameManager", "OnRewardedAdComplete", id);
                 }
-            }, 3000); // Simulating a 3-second ad
+            }, 3000); // Simulate a 3-second ad duration
         }
-        function SaveCloud(data, flush) { console.warn("SaveCloud is not implemented."); }
-        function LoadCloud(sendback) {
-            console.warn("LoadCloud is not implemented.");
-            if (sendback && myGameInstance) {
-                myGameInstance.SendMessage("GameManager", "SetLoadSaves", cloudSaves);
-            }
+        function StickyAdActivity(show) { console.warn("Yandex StickyAdActivity is disabled."); }
+        function Review() { console.warn("Yandex Review is disabled."); }
+        function PromptShow() { console.warn("Yandex PromptShow is disabled."); }
+        function InitLeaderboards() { console.warn("Yandex InitLeaderboards is disabled."); }
+        function GetLeaderboardScores() { return Promise.resolve("noData"); }
+        function SetLeaderboardScores() { console.warn("Yandex SetLeaderboardScores is disabled."); }
+        function SaveCloud() { console.warn("Yandex SaveCloud is disabled."); }
+        function LoadCloud(sendback) { 
+            console.warn("Yandex LoadCloud is disabled.");
             return Promise.resolve(cloudSaves);
         }
-        function RequestingEnvironmentData() {
-            console.warn("RequestingEnvironmentData is not implemented.");
+        function GetPayments() { return Promise.resolve(paymentsData); }
+        function ConsumePurchase() { console.warn("Yandex ConsumePurchase is disabled."); }
+        function ConsumePurchases() { console.warn("Yandex ConsumePurchases is disabled."); }
+        function RequestingEnvironmentData() { 
+            console.warn("Yandex RequestingEnvironmentData is disabled.");
             return Promise.resolve(environmentData);
         }
+        function InitPlayer(sendback) {
+            console.warn("Yandex InitPlayer is disabled.");
+            return Promise.resolve(playerData);
+        }
+
+        // Definition of InitGame function
+        window.InitGame = function() {
+            console.log("InitGame called: Game initialized successfully.");
+            initGame = true;
+
+            if (myGameInstance) {
+                console.log("Game instance is ready.");
+                myGameInstance.SendMessage("GameManager", "OnInitComplete", "true");
+            }
+        };
 
         // Unity instance setup
         const script = document.createElement("script");
@@ -148,23 +166,23 @@
         };
         document.body.appendChild(script);
 
-        // Global error handling to catch undefined references dynamically
+        // Global error handling
         window.addEventListener("unhandledrejection", (event) => {
-            console.warn("Unhandled promise rejection:", event.reason);
-            event.preventDefault();
+            if (event.reason && event.reason.message.includes("No parent to post message")) {
+                console.warn("Ignoring unhandled rejection:", event.reason);
+                event.preventDefault();
+            }
         });
 
         window.addEventListener("error", (event) => {
-            console.warn("Global error caught:", event.message);
-            event.preventDefault();
+            if (event.message.includes("No parent to post message")) {
+                console.warn("Ignoring error:", event.message);
+                event.preventDefault();
+            }
         });
 
-        // Prevent undefined function calls by replacing with no-op functions
-        const noOp = () => console.warn("Function not implemented.");
-        window.LangRequest = window.LangRequest || noOp;
-        window.InitPlayer = window.InitPlayer || noOp;
-        window.SaveCloud = window.SaveCloud || noOp;
-        window.RequestingEnvironmentData = window.RequestingEnvironmentData || noOp;
+        // Initialize Yandex SDK
+        InitYSDK();
     </script>
 </body>
 </html>
