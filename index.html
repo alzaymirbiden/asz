@@ -5,6 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
     <link rel="stylesheet" href="./style.css"/>
+    <!-- Yandex Games SDK -->
     <script src="v2.c9615ef7d76dacd2dd71.js"></script>
     <style>
         canvas:focus { outline: none; }
@@ -75,30 +76,39 @@
         let ysdk = null;
         let initGame = false;
 
-        // Mock the problematic postToParent function
+        // Mock Yandex SDK's postToParent to suppress errors
         window.W = window.W || {};
         W.postToParent = function() {
-            console.warn("Blocked postToParent call.");
+            console.warn("Blocked a call to postToParent.");
         };
 
-        // Mock Yandex SDK behavior
+        // Placeholder variables
+        let cloudSaves = "noData";
+        let environmentData = { language: "en", domain: "default" };
+        let playerData = "noData";
+        let paymentsData = "none";
+
+        // Override Yandex SDK behavior
         async function InitYSDK() {
             try {
                 ysdk = await YaGames.init();
                 console.log("Yandex SDK initialized successfully.");
 
-                // Override language to English
+                // Set language to English
                 if (ysdk.environment.i18n.lang !== "en") {
                     ysdk.environment.i18n.lang = "en";
-                    console.log("Language set to English.");
+                    console.log("Language overridden to English.");
                 }
             } catch (e) {
                 console.warn("Yandex SDK initialization failed:", e);
             }
         }
 
-        function RewardedShow(id) {
-            console.warn("Mocking rewarded ad.");
+        function FullAdShow() { console.warn("Yandex FullAdShow is disabled."); }
+        function RewardedShow(id) { 
+            console.warn("Mocking rewarded ad show.");
+            
+            // Notify Unity about a successful rewarded ad event
             setTimeout(() => {
                 if (myGameInstance) {
                     console.log("Mocked rewarded ad completed.");
@@ -106,16 +116,37 @@
                 }
             }, 3000); // Simulate a 3-second ad duration
         }
+        function StickyAdActivity(show) { console.warn("Yandex StickyAdActivity is disabled."); }
+        function Review() { console.warn("Yandex Review is disabled."); }
+        function PromptShow() { console.warn("Yandex PromptShow is disabled."); }
+        function InitLeaderboards() { console.warn("Yandex InitLeaderboards is disabled."); }
+        function GetLeaderboardScores() { return Promise.resolve("noData"); }
+        function SetLeaderboardScores() { console.warn("Yandex SetLeaderboardScores is disabled."); }
+        function SaveCloud() { console.warn("Yandex SaveCloud is disabled."); }
+        function LoadCloud(sendback) { 
+            console.warn("Yandex LoadCloud is disabled.");
+            return Promise.resolve(cloudSaves);
+        }
+        function GetPayments() { return Promise.resolve(paymentsData); }
+        function ConsumePurchase() { console.warn("Yandex ConsumePurchase is disabled."); }
+        function ConsumePurchases() { console.warn("Yandex ConsumePurchases is disabled."); }
+        function RequestingEnvironmentData() { 
+            console.warn("Yandex RequestingEnvironmentData is disabled.");
+            return Promise.resolve(environmentData);
+        }
+        function InitPlayer(sendback) {
+            console.warn("Yandex InitPlayer is disabled.");
+            return Promise.resolve(playerData);
+        }
 
-        // Game ready handler to suppress further issues
-        window.GameReady = function() {
-            console.log("Game is ready. Suppressing Yandex SDK errors.");
-            if (ysdk && ysdk.logGameInitTime) {
-                try {
-                    ysdk.logGameInitTime();
-                } catch (e) {
-                    console.warn("Suppressed logGameInitTime error:", e);
-                }
+        // Definition of InitGame function
+        window.InitGame = function() {
+            console.log("InitGame called: Game initialized successfully.");
+            initGame = true;
+
+            if (myGameInstance) {
+                console.log("Game instance is ready.");
+                myGameInstance.SendMessage("GameManager", "OnInitComplete", "true");
             }
         };
 
@@ -135,17 +166,17 @@
         };
         document.body.appendChild(script);
 
-        // Suppress unhandled rejections globally
+        // Global error handling
         window.addEventListener("unhandledrejection", (event) => {
             if (event.reason && event.reason.message.includes("No parent to post message")) {
-                console.warn("Suppressed unhandled rejection:", event.reason);
+                console.warn("Ignoring unhandled rejection:", event.reason);
                 event.preventDefault();
             }
         });
 
         window.addEventListener("error", (event) => {
             if (event.message.includes("No parent to post message")) {
-                console.warn("Suppressed error:", event.message);
+                console.warn("Ignoring error:", event.message);
                 event.preventDefault();
             }
         });
