@@ -10,7 +10,6 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/alzaymirbiden/asz@main/style.css"/>
-    <!-- Yandex Games SDK -->
     <script src="https://cdn.jsdelivr.net/gh/alzaymirbiden/asz@main/v2.c9615ef7d76dacd2dd71.js"></script>
     <style>
         canvas:focus { outline: none; }
@@ -79,83 +78,61 @@
 
         let myGameInstance = null;
         let ysdk = null;
-        let initGame = false;
 
-        // Mock Yandex SDK's postToParent to suppress errors
+        // Mock missing variables and functions
         window.W = window.W || {};
-        W.postToParent = function() {
-            console.warn("Blocked a call to postToParent.");
-        };
+        W.postToParent = function() { console.warn("Blocked a call to postToParent."); };
 
-        // Placeholder variables
         let cloudSaves = "noData";
         let environmentData = { language: "en", domain: "default" };
         let playerData = "noData";
         let paymentsData = "none";
 
-        // Override Yandex SDK behavior
         async function InitYSDK() {
             try {
                 ysdk = await YaGames.init();
                 console.log("Yandex SDK initialized successfully.");
-
-                // Set language to English
                 if (ysdk.environment.i18n.lang !== "en") {
                     ysdk.environment.i18n.lang = "en";
-                    console.log("Language overridden to English.");
+                    console.log("Language set to English.");
                 }
             } catch (e) {
                 console.warn("Yandex SDK initialization failed:", e);
             }
         }
 
-        function FullAdShow() { console.warn("Yandex FullAdShow is disabled."); }
-        function RewardedShow(id) { 
+        function RewardedShow(id) {
             console.warn("Mocking rewarded ad show.");
-            
-            // Notify Unity about a successful rewarded ad event
             setTimeout(() => {
                 if (myGameInstance) {
                     console.log("Mocked rewarded ad completed.");
-                    myGameInstance.SendMessage("GameManager", "OnRewardedAdComplete", id);
+                    myGameInstance.SendMessage("GameManager", "OnRewardedAdComplete", id || "mocked_id");
                 }
-            }, 3000); // Simulate a 3-second ad duration
+            }, 3000);
         }
-        function StickyAdActivity(show) { console.warn("Yandex StickyAdActivity is disabled."); }
-        function Review() { console.warn("Yandex Review is disabled."); }
-        function PromptShow() { console.warn("Yandex PromptShow is disabled."); }
-        function InitLeaderboards() { console.warn("Yandex InitLeaderboards is disabled."); }
-        function GetLeaderboardScores() { return Promise.resolve("noData"); }
-        function SetLeaderboardScores() { console.warn("Yandex SetLeaderboardScores is disabled."); }
-        function SaveCloud() { console.warn("Yandex SaveCloud is disabled."); }
+
+        // Other SDK placeholders
+        function FullAdShow() { console.warn("FullAdShow is not implemented."); }
+        function StickyAdActivity() { console.warn("StickyAdActivity is not implemented."); }
+        function SaveCloud() { console.warn("SaveCloud is not implemented."); }
         function LoadCloud(sendback) { 
-            console.warn("Yandex LoadCloud is disabled.");
+            console.warn("LoadCloud is not implemented.");
             return Promise.resolve(cloudSaves);
         }
         function GetPayments() { return Promise.resolve(paymentsData); }
-        function ConsumePurchase() { console.warn("Yandex ConsumePurchase is disabled."); }
-        function ConsumePurchases() { console.warn("Yandex ConsumePurchases is disabled."); }
         function RequestingEnvironmentData() { 
-            console.warn("Yandex RequestingEnvironmentData is disabled.");
             return Promise.resolve(environmentData);
         }
-        function InitPlayer(sendback) {
-            console.warn("Yandex InitPlayer is disabled.");
-            return Promise.resolve(playerData);
-        }
+        function InitPlayer(sendback) { return Promise.resolve(playerData); }
 
-        // Definition of InitGame function
         window.InitGame = function() {
-            console.log("InitGame called: Game initialized successfully.");
-            initGame = true;
-
+            console.log("Game initialized.");
             if (myGameInstance) {
-                console.log("Game instance is ready.");
                 myGameInstance.SendMessage("GameManager", "OnInitComplete", "true");
             }
         };
 
-        // Unity instance setup
+        // Unity Instance Setup
         const script = document.createElement("script");
         script.src = loaderUrl;
         script.onload = () => {
@@ -164,34 +141,25 @@
             }).then((unityInstance) => {
                 myGameInstance = unityInstance;
                 loadingCover.style.display = "none";
-                console.log("Unity instance successfully created.");
+                console.log("Unity instance created.");
             }).catch((err) => {
                 console.error("Unity Instance Error:", err);
             });
         };
         document.body.appendChild(script);
 
-        // Global error handling
         window.addEventListener("unhandledrejection", (event) => {
-            if (event.reason && event.reason.message.includes("No parent to post message")) {
-                console.warn("Ignoring unhandled rejection:", event.reason);
-                event.preventDefault();
-            }
+            console.warn("Unhandled promise rejection:", event.reason);
         });
 
         window.addEventListener("error", (event) => {
-            if (event.message.includes("No parent to post message")) {
-                console.warn("Ignoring error:", event.message);
-                event.preventDefault();
-            }
+            console.warn("Global error:", event.message);
         });
 
-        // Initialize Yandex SDK
         InitYSDK();
     </script>
 </body>
 </html>
-
 
 ]]></Content>
 </Module>
